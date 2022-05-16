@@ -1,0 +1,177 @@
+/*
+ * Copyright (c) 2014-2022, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "msm8956.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. MSM 8976";
+	compatible = "qcom,msm8976";
+	qcom,msm-id = <278 0x0>;
+	/*
+	qcom,mpm2-sleep-counter@4a3000 {
+		compatible = "qcom,mpm2-sleep-counter";
+		reg = <0x4a3000 0x1000>;
+		clock-frequency = <32768>;
+	};
+	
+	qcom,msmcci-ccimon {
+		compatible = "qcom,msmcci-hwmon";
+		reg = <0xb1dc000 0xb0>,
+			<0xb1dc004 0xb0>;
+		interrupts = <0 272 4>;
+		qcom,counter-event-sel = <1 2>;
+		qcom,target-dev = <&cci_cache>;
+		qcom,shared-irq;
+	};
+	
+	qcom,arm-memlat-mon-4 {
+		compatible = "qcom,arm-memlat-mon";
+		qcom,cpulist = <&CPU4 &CPU5 &CPU6 &CPU7>;
+		qcom,target-dev = <&memlat_cpu4>;
+		qcom,core-dev-table =
+			<  800000   805 >,
+			< 1200000  4101 >,
+			< 1382400  5712 >,
+			< 1612800  6152 >,
+			< 1804800  7104 >;
+	};
+	
+	qcom,msm-cpufreq {
+	clock-names = "l2_clk", "cpu0_clk", "cpu4_clk", "cpu5_clk", "cpu6_clk", "cpu7_clk";
+	clocks = <&clock_cpu P_CCI_CLK>,
+			 <&clock_cpu P_A53_CLK>,
+			 <&clock_cpu P_A72_CLK>,
+			 <&clock_cpu P_A72_CLK>,
+			 <&clock_cpu P_A72_CLK>,
+			 <&clock_cpu P_A72_CLK>;
+	};
+	qcom,msm-thermal {
+		qcom,synchronous-cluster-map = <0 4 &CPU0 &CPU1 &CPU2 &CPU3>,
+						<1 4 &CPU4 &CPU5 &CPU6 &CPU7>;
+	};
+	qcom,bcl {
+	qcom,bcl-freq-control-list = <&CPU4 &CPU5 &CPU6 &CPU7>;
+		qcom,bcl-hotplug-list = <&CPU4 &CPU5 &CPU6 &CPU7>;
+		qcom,bcl-soc-hotplug-list = <&CPU4 &CPU5 &CPU6 &CPU7>;
+	};
+                      
+	  qcom,msm-imem@8600000 {
+		restart_reason@65c {
+			compatible = "qcom,msm-imem-restart_reason";
+			reg = <0x65c 4>;
+		};
+                
+		boot_stats@6b0 {
+			compatible = "qcom,msm-imem-boot_stats";
+			reg = <0x6b0 32>;
+		};
+		 
+           
+	};
+	 */
+	 qcom,wcnss-wlan@a000000 {
+		qcom,pc-disable-latency = <80>;
+		qcom,has-vsys-adc-channel;
+		qcom,wcnss-adc_tm = <&pm8950_adc_tm>;
+	 };
+	 qcom,mss@4080000{
+		 qcom,mx-spike-wa;
+	 };
+	 
+	qcom,rpm-smd {
+			/delete-property/ compatible;
+			compatible = "qcom,rpm-smd";
+			/delete-property/ qcom,glink-edge;
+			rpm-channel-type = <15>; /* SMD_APPS_RPM */
+	};
+};
+
+&tsens {
+	qcom,slope = <3200 3200 3200 3200 3200 3200 3200 3200 3200 3200 3200>;
+};
+/*
+&clock_gcc_gfx{
+	qcom,gfxfreq-corner-v0 =
+		<         0   0 >,
+		<         0   0 >,
+		< 133333333   1 >,  
+		< 133333333   1 >, 
+		< 200000000   2 >,  
+		< 200000000   2 >,  
+		< 266666667   3 >,  
+		< 266666667   3 >, 
+		< 300000000   4 >, 
+		< 300000000   4 >,  
+		< 366670000   5 >,  
+		< 366670000   5 >,  
+		< 432000000   6 >,  
+		< 432000000   6 >,  
+		< 480000000   7 >,  
+		< 480000000   7 >,  
+		< 550000000   8 >,  
+		< 550000000   8 >,  
+		< 600000000   9 >,  
+		< 621330000   9 >; 
+	
+	  
+};
+*/
+&blsp1_uart2
+{
+	interrupt-map = <0 &intc 0 108 0
+		1 &intc 0 238 0
+		2 &msm_gpio 0 5 0>;
+};
+&android_usb {
+	qcom,pm-qos-latency = <59 150 10741>;
+};
+
+&ipa_hw {
+	qcom,modem-cfg-emb-pipe-flt;
+	};
+&dcc {
+	reg = <0xb3000 0x1000>,
+ 	<0xb4000 0x800>;
+};
+
+&pm8950_gpios {
+	pm8950_gpio_1: cdc_pm_mclk {
+		cdc_pm {
+			pins = "gpio1";
+			function = "func1"; /* SF1 */
+			output-low;
+			bias-disable;
+			qcom,drive-strength = <2>;
+			power-source = <0>; /* VPH_PWR */
+		};
+	};
+
+	pm8950_gpio_5: gpio_5 {
+		nfc {
+			pins = "gpio5";
+			function = "func1"; /* SF1 */
+			input-low;
+			bias-disable;
+			power-source = <2>; /* VIN2 */
+		};
+	};
+
+	pm8950_gpio_7: wcd_eldo_en {
+		wcd_eldo {
+			pins = "gpio7";
+			function = "gpio";
+			output-low;
+			bias-disable;
+			power-source = <0>; /* VPH_PWR */
+		};
+	};
+};
