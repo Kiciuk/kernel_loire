@@ -22,6 +22,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/dma-buf.h>
 #include <linux/iommu.h>
+#include <linux/qcom_iommu.h>
 #include <linux/platform_device.h>
 #include <ipc/apr.h>
 #include <linux/of_device.h>
@@ -737,21 +738,23 @@ static int msm_audio_smmu_init(struct device *dev)
 {
 	struct dma_iommu_mapping *mapping;
 	int ret;
+	struct device *cb_dev;
+	cb_dev = msm_iommu_get_ctx("adsp_io");
 
-	mapping = arm_iommu_create_mapping(&platform_bus_type,
-					   MSM_AUDIO_ION_VA_START,
-					   MSM_AUDIO_ION_VA_LEN);
+	mapping = arm_iommu_create_mapping(msm_iommu_get_bus(cb_dev),
+				MSM_AUDIO_ION_VA_START,
+				MSM_AUDIO_ION_VA_LEN);
 	if (IS_ERR(mapping))
 		return PTR_ERR(mapping);
 
-	ret = arm_iommu_attach_device(dev, mapping);
+	ret = arm_iommu_attach_device(cb_dev, mapping);
 	if (ret) {
-		dev_err(dev, "%s: Attach failed, err = %d\n",
-			__func__, ret);
+				dev_err(dev, "%s: Attach failed for %s, err = %d\n",
+			__func__, dev_name(cb_dev), ret);
 		goto fail_attach;
 	}
 
-	msm_audio_ion_data.cb_dev = dev;
+	msm_audio_ion_data.cb_dev = cb_dev;
 	msm_audio_ion_data.mapping = mapping;
 	INIT_LIST_HEAD(&msm_audio_ion_data.alloc_list);
 	mutex_init(&(msm_audio_ion_data.list_mutex));
