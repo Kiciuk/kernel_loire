@@ -370,6 +370,13 @@ config ARCH_SONY_LOIRE
 	  which is based on QCOM MSM8956 chipset.
 	  If you enable this config,
 	  please use SONY Mobile device tree.
+	  
+config MACH_LEECO_S2
+	bool "Leeco S2 smartphone"
+	depends on ARCH_MSM8916
+	help
+	  Support for the Leeco s2 device
+	  which is based on QCOM MSM8976 chipset.
 
 config MACH_SONY_SUZU
 	bool "Sony Mobile Suzu"
