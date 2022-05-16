@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2018, 2020 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1886,7 +1886,7 @@ struct miscdevice rtac_misc = {
 	.fops	= &rtac_fops,
 };
 
-int __init rtac_init(void)
+static int __init rtac_init(void)
 {
 	int i = 0;
 
@@ -1968,8 +1968,9 @@ int __init rtac_init(void)
 nomem:
 	return -ENOMEM;
 }
+module_init(rtac_init);
 
-void rtac_exit(void)
+static void __exit rtac_exit(void)
 {
 	misc_deregister(&rtac_misc);
 	kzfree(rtac_adm_buffer);
@@ -1977,6 +1978,7 @@ void rtac_exit(void)
 	kzfree(rtac_afe_buffer);
 	kzfree(rtac_voice_buffer);
 }
+module_exit(rtac_exit);
 
 MODULE_DESCRIPTION("SoC QDSP6v2 Real-Time Audio Calibration driver");
 MODULE_LICENSE("GPL v2");

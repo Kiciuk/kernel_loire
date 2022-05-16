@@ -1,4 +1,4 @@
-/*  Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
+/*  Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -38,8 +38,10 @@
 #define NUM_CHANNELS_STEREO 2
 #define NUM_CHANNELS_THREE 3
 #define NUM_CHANNELS_QUAD 4
-#define CVP_VERSION_1 1
 #define CVP_VERSION_2 2
+#ifdef CONFIG_ARCH_SONY_LOIRE
+#define CVP_VERSION_1 1
+#endif /* CONFIG_ARCH_SONY_LOIRE */
 #define GAIN_Q14_FORMAT(a) (a << 14)
 
 enum {
@@ -4347,14 +4349,35 @@ static int voice_send_cvp_mfc_config_cmd(struct voice_data *v)
 
 static int voice_get_avcs_version_per_service(uint32_t service_id)
 {
+	int ret = 0;
+	size_t ver_size;
+	struct avcs_fwk_ver_info *ver_info = NULL;
+
+#ifdef CONFIG_ARCH_SONY_LOIRE
+	return CVP_VERSION_1;
+#endif /* CONFIG_ARCH_SONY_LOIRE */
+
 	if (service_id == AVCS_SERVICE_ID_ALL) {
 		pr_err("%s: Invalid service id: %d", __func__,
 		       AVCS_SERVICE_ID_ALL);
 		return -EINVAL;
 	}
-	common.is_avcs_version_queried = true;
-	return CVP_VERSION_1;
 
+	ver_size = sizeof(struct avcs_get_fwk_version) +
+		   sizeof(struct avs_svc_api_info);
+	ver_info = kzalloc(ver_size, GFP_KERNEL);
+	if (ver_info == NULL)
+		return -ENOMEM;
+
+	ret = q6core_get_service_version(service_id, ver_info, ver_size);
+	if (ret < 0)
+		goto done;
+
+	ret = ver_info->services[0].api_version;
+	common.is_avcs_version_queried = true;
+done:
+	kfree(ver_info);
+	return ret;
 }
 
 static void voice_mic_break_work_fn(struct work_struct *work)
@@ -8007,7 +8030,7 @@ static int32_t qdsp_cvp_callback(struct apr_client_data *data, void *priv)
 	}
 
 	if (data->opcode == APR_BASIC_RSP_RESULT) {
-		if (data->payload_size >= (2 * sizeof(uint32_t))) {
+		if (data->payload_size) {
 			ptr = data->payload;
 
 			pr_debug("%x %x\n", ptr[0], ptr[1]);
@@ -9766,7 +9789,7 @@ static void voc_release_uevent_data(struct kobject *kobj)
 	kfree(data);
 }
 
-int __init voice_init(void)
+static int __init voice_init(void)
 {
 	int rc = 0, i = 0;
 
@@ -9877,11 +9900,12 @@ int __init voice_init(void)
 	pr_debug("%s: rc=%d\n", __func__, rc);
 	return rc;
 }
+device_initcall(voice_init);
 
-
-void voice_exit(void)
+static void __exit voice_exit(void)
 {
 	q6core_destroy_uevent_data(common.uevent_data);
 	voice_delete_cal_data();
 	free_cal_map_table();
 }
+__exitcall(voice_exit);

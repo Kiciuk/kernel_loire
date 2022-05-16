@@ -139,7 +139,8 @@ static int q6lsm_get_session_id_from_lsm_client(struct lsm_client *client)
 		if (lsm_session[n] == client)
 			return n;
 	}
-	pr_err("%s: cannot find matching lsm client.\n", __func__);
+	pr_err("%s: cannot find matching lsm client. client = %pa\n",
+		__func__, client);
 	return LSM_INVALID_SESSION_ID;
 }
 
@@ -293,7 +294,7 @@ static void q6lsm_session_free(struct lsm_client *client)
 
 	pr_debug("%s: Freeing session ID %d\n", __func__, client->session);
 	spin_lock_irqsave(&lsm_session_lock, flags);
-	lsm_session[client->session] = NULL;
+	lsm_session[client->session] = LSM_INVALID_SESSION_ID;
 	spin_unlock_irqrestore(&lsm_session_lock, flags);
 	client->session = LSM_INVALID_SESSION_ID;
 }
@@ -2394,7 +2395,7 @@ err:
 	return ret;
 }
 
-int __init q6lsm_init(void)
+static int __init q6lsm_init(void)
 {
 	int i = 0;
 
@@ -2415,8 +2416,10 @@ int __init q6lsm_init(void)
 
 	return 0;
 }
+device_initcall(q6lsm_init);
 
-void q6lsm_exit(void)
+static void __exit q6lsm_exit(void)
 {
 	lsm_delete_cal_data();
 }
+__exitcall(q6lsm_exit);
