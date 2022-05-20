@@ -199,6 +199,12 @@ config INPUT_KEYCOMBO
 	depends on INPUT
 	---help---
 	  Say Y here if you want to take action when some keys are pressed;
+	  
+config INPUT_FINGERPRINT
+	tristate "fingerprint driver support"
+	depends on INPUT
+	help
+	  Say Y here to enable goodix fingerprint driver support
 
 comment "Input Device Drivers"
 
@@ -213,6 +219,8 @@ source "drivers/input/tablet/Kconfig"
 source "drivers/input/touchscreen/Kconfig"
 
 source "drivers/input/misc/Kconfig"
+
+source "drivers/input/fingerprint/Kconfig"
 
 source "drivers/input/sensors/smi130/Kconfig"
 
